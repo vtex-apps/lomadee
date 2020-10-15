@@ -1,10 +1,9 @@
-import { getProductPrice, getProductAvable } from "./helpers/index";
-import { PixelMessage } from "./typings/events";
-import { canUseDOM } from "vtex.render-runtime";
+import { PixelMessage, Product } from "./typings/events"
+import { canUseDOM } from "vtex.render-runtime"
 
-function purchaseInjection(advertiserId: string, lomadeeEventId: string, transactionId: string, transactionTotalWithoutFreight: string) {
+function purchaseInjection(advertiserId: string, transactionId: string, transactionTotalWithoutFreight: number) {
   const img = document.createElement("img");
-  const url = `https://secure.lomadee.com/at/actionlog?adv=${advertiserId}&country=BR&transaction=${transactionId}&event1=${lomadeeEventId}&value1=${transactionTotalWithoutFreight}`;
+  const url = `https://secure.lomadee.com/at/actionlog?adv=${advertiserId}&country=BR&transaction=${transactionId}&value1=${transactionTotalWithoutFreight}`;
   img.setAttribute("id", "lomadee-pixel");
   img.setAttribute("src", url);
   document.body.appendChild(img);
@@ -15,9 +14,35 @@ function handleMessages(e: PixelMessage) {
 
   switch (e.data.eventName) {
     case "vtex:pageInfo": {
-      lomadee_datalayer = {
-        page: "home"
-      };
+      switch (e.data.eventType) {
+        case 'homeView': {
+          lomadee_datalayer = {
+            page: "home"
+          };
+        }
+        case 'categoryView': {
+          lomadee_datalayer = {
+            page: 'category',
+            category: {
+              name: e.data.category?.name,
+            }
+          }
+        }
+        case 'departmentView': {
+          lomadee_datalayer = {
+            page: 'category',
+            category: {
+              name: e.data.category?.name,
+            }
+          }
+        }
+        case 'internalSiteSearchView': {
+          lomadee_datalayer = {
+            page: 'search',
+            keyword: e.data.search?.term,
+          }
+        }
+      }
       break;
     }
 
@@ -29,11 +54,17 @@ function handleMessages(e: PixelMessage) {
           amount: e.data.transactionSubtotal,
           currency: "BRL",
           paymentType: e.data.transactionPaymentType[0].paymentSystemName,
-          items: e.data.transactionProducts
+          items: e.data.transactionProducts.map(product => ({
+            sku: product.sku,
+            name: product.name,
+            category: product.categoryId,
+            price: product.price,
+            quantity: product.quantity,
+          }))
         }
       };
 
-      purchaseInjection(window.advertiserId, window.lomadeeEventId, e.data.transactionId, e.data.transactionSubtotal);
+      purchaseInjection(window.advertiserId, e.data.transactionId, e.data.transactionSubtotal);
       break;
     }
 
@@ -47,38 +78,7 @@ function handleMessages(e: PixelMessage) {
           sku: productId,
           name: productName,
           price: getProductPrice(e.data.product),
-          available: getProductAvable(e.data.product)
-        }
-      };
-      break;
-    }
-
-    case "vtex:addToCart": {
-      lomadee_datalayer = {
-        page: "cart",
-        cart: {
-          skus: e.data.items[0].skuId
-        }
-      };
-
-      break;
-    }
-
-    case "vtex:internalSiteSearchView": {
-      const category = e.data.products[0].categories[0].split("/");
-      lomadee_datalayer = {
-        page: "search",
-        keyword: category[2]
-      };
-      break;
-    }
-
-    case "vtex:categoryView": {
-      const category = e.data.products[0].categories[0].split("/");
-      lomadee_datalayer = {
-        page: "category",
-        category: {
-          name: category[2]
+          available: getProductAvailable(e.data.product)
         }
       };
       break;
@@ -92,6 +92,27 @@ function handleMessages(e: PixelMessage) {
     }
   }
 }
+
+function getProductPrice(product: Product) {
+  let price;
+  try {
+    price = product.items[0].sellers[0].commertialOffer.Price;
+  } catch {
+    price = undefined;
+  }
+  return price;
+}
+
+function getProductAvailable(product: Product) {
+  let quantity;
+  try {
+    quantity = product.items[0].sellers[0].commertialOffer.AvailableQuantity;
+  } catch {
+    quantity = 0;
+  }
+  return quantity > 0;
+}
+
 
 if (canUseDOM) {
   window.addEventListener("message", handleMessages);
