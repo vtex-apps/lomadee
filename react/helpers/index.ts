@@ -10,12 +10,12 @@ export function getProductPrice(product: Product) {
   return price;
 }
 
-export function getProductAvable(product: Product) {
+export function getProductAvailable(product: Product) {
   let quantity;
   try {
     quantity = product.items[0].sellers[0].commertialOffer.AvailableQuantity;
   } catch {
-    quantity = undefined;
+    quantity = 0;
   }
-  return quantity;
+  return quantity > 0;
 }

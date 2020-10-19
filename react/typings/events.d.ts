@@ -3,191 +3,313 @@ export interface PixelMessage extends MessageEvent {
     | ProductViewData
     | ProductClickData
     | OrderPlacedData
+    | OrderPlacedTrackedData
     | PageViewData
     | ProductImpressionData
     | AddToCartData
     | RemoveToCartData
-    | CategoryViewData
-    | DepartmentViewData
-    | PageInfoData
-    | internalSiteSearchView;
+    | CartChangedData
+    | HomePageInfo
+    | ProductPageInfoData
+    | SearchPageInfoData
+    | UserData
+    | CartIdData
 }
 
 export interface EventData {
-  event: string;
-  eventName: string;
-  currency: string;
-}
-
-export interface PageViewData extends EventData {
-  event: "pageView";
-  eventName: "vtex:pageView";
-  pageTitle: string;
-  pageUrl: string;
-  referrer: string;
+  event: string
+  eventName: string
+  currency: string
 }
 
 export interface PageInfoData extends EventData {
-  event: "pageInfo";
-  eventName: "vtex:pageInfo";
-  eventType: string;
-  accountName: string;
-  pageCategory: string;
-  pageDepartment: string;
-  pageFacets: string[];
-  pageTitle: string;
-  pageUrl: string;
+  event: 'pageInfo'
+  eventName: 'vtex:pageInfo'
+  accountName: string
+  pageTitle: string
+  pageUrl: string
 }
 
-export interface CategoryViewData extends EventData {
-  event: "categoryView";
-  eventName: "vtex:categoryView";
-  products: Product[];
+export interface UserData extends PageInfoData {
+  eventType: 'userData'
+  eventName: 'vtex:userData'
+  firstName?: string
+  lastName?: string
+  document?: string
+  id?: string
+  email?: string
+  phone?: string
+  isAuthenticated: boolean
 }
 
-export interface DepartmentViewData extends EventData {
-  event: "departmentView";
-  eventName: "vtex:departmentView";
-  products: Product[];
+export interface CartIdData extends PageInfoData {
+  eventType: 'cartId'
+  eventName: 'vtex:cartId'
+  cartId: string
+}
+
+export interface HomePageInfo extends PageInfoData {
+  eventType: 'homeView'
+}
+
+export interface ProductPageInfoData extends PageInfoData {
+  eventType: 'productPageInfo'
+}
+
+export interface SearchPageInfoData extends PageInfoData {
+  eventType:
+    | 'internalSiteSearchView'
+    | 'categoryView'
+    | 'departmentView'
+    | 'emptySearchView'
+  category?: CategoryMetaData
+  department?: DepartmentMetaData
+  search?: SearchMetaData
+}
+
+interface CategoryMetaData {
+  id: string
+  name: string
+}
+
+interface DepartmentMetaData {
+  id: string
+  name: string
+}
+
+interface SearchMetaData {
+  term: string
+  category: CategoryMetaData
+  results: number
+}
+
+export interface PageViewData extends EventData {
+  event: 'pageView'
+  eventName: 'vtex:pageView'
+  pageTitle: string
+  pageUrl: string
+  referrer: string
 }
 
 export interface AddToCartData extends EventData {
-  event: "addToCart";
-  eventName: "vtex:addToCart";
-  items: AddToCartProduct[];
+  event: 'addToCart'
+  eventName: 'vtex:addToCart'
+  items: CartItem[]
 }
 
 export interface RemoveToCartData extends EventData {
-  event: "removeFromCart";
-  eventName: "vtex:removeFromCart";
-  items: any[];
+  event: 'removeFromCart'
+  eventName: 'vtex:removeFromCart'
+  items: CartItem[]
+}
+
+export interface CartChangedData extends EventData {
+  event: 'cartChanged'
+  eventName: 'vtex:cartChanged'
+  items: CartItem[]
 }
 
 export interface OrderPlacedData extends Order, EventData {
-  event: "orderPlaced";
-  eventName: "vtex:orderPlaced";
+  event: 'orderPlaced'
+  eventName: 'vtex:orderPlaced'
+}
+
+export interface OrderPlacedTrackedData extends Order, EventData {
+  event: 'orderPlacedTracked'
+  eventName: 'vtex:orderPlacedTracked'
 }
 
 export interface ProductViewData extends EventData {
-  event: "productView";
-  eventName: "vtex:productView";
-  product: Product;
-}
-
-export interface InternalSiteSearchView extends EventData {
-  event: "internalSiteSearchView";
-  eventName: "vtex:internalSiteSearchView";
-  products: Product[];
+  event: 'productView'
+  eventName: 'vtex:productView'
+  product: Product
 }
 
 export interface ProductClickData extends EventData {
-  event: "productClick";
-  eventName: "vtex:productClick";
-  product: Product;
+  event: 'productClick'
+  eventName: 'vtex:productClick'
+  product: ProductSummary
 }
 
 export interface ProductImpressionData extends EventData {
-  event: "productImpression";
-  eventName: "vtex:productImpression";
-  product: Product;
-  position: number;
-  list: string;
+  event: 'productImpression'
+  eventName: 'vtex:productImpression'
+  impressions: Impression[]
+  product?: ProductSummary // deprecated, use impressions list!
+  position?: number // deprecated, use impressions list!
+  list: string
+}
+
+export interface CartData extends EventData {
+  event: 'cart'
+  eventName: 'vtex:cart'
+  orderForm: OrderForm
+}
+
+interface CartItem {
+  brand: string
+  ean: string
+  category: string
+  detailUrl: string
+  imageUrl: string
+  name: string
+  price: number
+  productId: string
+  productRefId: string
+  quantity: number
+  seller: string
+  sellerName: string
+  skuId: string
+  variant: string
+}
+
+export interface OrderForm {
+  id: string
+  items: CartItem[]
 }
 
 export interface Order {
-  currency: string;
-  accountName: string;
-  orderGroup: string;
-  salesChannel: string;
-  coupon: string;
-  visitorType: string;
-  visitorContactInfo: string[];
-  transactionId: string;
-  transactionDate: string;
-  transactionAffiliation: string;
-  transactionTotal: number;
-  transactionShipping: number;
-  transactionTax: number;
-  transactionCurrency: string;
-  transactionPaymentType: PaymentType[];
-  transactionShippingMethod: ShippingMethod[];
-  transactionProducts: ProductOrder[];
+  accountName: string
+  corporateName: string
+  coupon: string
+  currency: string
+  openTextField: string
+  orderGroup: string
+  salesChannel: string
+  visitorAddressCity: string
+  visitorAddressComplement: string
+  visitorAddressCountry: string
+  visitorAddressNeighborhood: string
+  visitorAddressNumber: string
+  visitorAddressPostalCode: string
+  visitorAddressState: string
+  visitorAddressStreet: string
+  visitorContactInfo: string[]
+  visitorContactPhone: string
+  visitorType: string
+  transactionId: string
+  transactionDate: string
+  transactionAffiliation: string
+  transactionTotal: number
+  transactionShipping: number
+  transactionSubtotal: number
+  transactionDiscounts: number
+  transactionTax: number
+  transactionCurrency: string
+  transactionPaymentType: PaymentType[]
+  transactionShippingMethod: ShippingMethod[]
+  transactionLatestShippingEstimate: Date
+  transactionProducts: ProductOrder[]
   transactionPayment: {
-    id: string;
-  };
+    id: string
+  }
 }
 
-interface PaymentType {
-  group: string;
-  paymentSystemName: string;
-  installments: number;
-  value: number;
+export interface Impression {
+  product: ProductSummary
+  position: number
 }
 
-interface ShippingMethod {
-  itemId: string;
-  selectedSla: string;
+export interface PaymentType {
+  group: string
+  paymentSystemName: string
+  installments: number
+  value: number
 }
 
-interface ProductOrder {
-  id: string;
-  name: string;
-  sku: string;
-  skuRefId: string;
-  skuName: string;
-  brand: string;
-  brandId: string;
-  seller: string;
-  sellerId: string;
-  category: string;
-  categoryId: string;
-  categoryTree: string[];
-  categoryIdTree: string[];
-  originalPrice: number;
-  price: number;
-  sellingPrice: number;
-  tax: number;
-  quantity: number;
-  components: any[];
-  measurementUnit: string;
-  unitMultiplier: number;
+export interface ShippingMethod {
+  itemId: string
+  selectedSla: string
+}
+
+export interface ProductOrder {
+  id: string
+  name: string
+  sku: string
+  skuRefId: string
+  skuName: string
+  productRefId: string
+  ean: string
+  slug: string
+  brand: string
+  brandId: string
+  seller: string
+  sellerId: string
+  category: string
+  categoryId: string
+  categoryTree: string[]
+  categoryIdTree: string[]
+  priceTags: PriceTag[]
+  originalPrice: number
+  price: number
+  sellingPrice: number
+  tax: number
+  quantity: number
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  components: any[]
+  measurementUnit: string
+  unitMultiplier: number
+}
+
+export interface PriceTag {
+  identifier: string
+  isPercentual: boolean
+  value: number
 }
 
 export interface Product {
-  brand: string;
-  categoryId?: string; // inconsistency
-  categories: string[];
-  productId: string;
-  productName: string;
-  selectedSku?: string; // inconsistency
-  items: Item[];
-  sku: Item;
-  [key: string]: any;
+  brand: string
+  brandId: string
+  categories: string[]
+  categoryId: string
+  categoryTree: Array<{ id: string; name: string }>
+  detailUrl: string
+  items: Item[]
+  linkText: string
+  productId: string
+  productName: string
+  productReference: string
+  selectedSku: Item
 }
 
-interface Item {
-  itemId: string;
-  name: string;
-  seller?: Seller;
-  [key: string]: any;
+export interface Item {
+  itemId: string
+  name: string
+  ean: string
+  referenceId: { Key: string; Value: string }
+  imageUrl: string
+  sellers: Seller[]
 }
 
-interface Seller {
-  commertialOffer: CommertialOffer;
-  AvailableQuantity: number;
-  [key: string]: any;
+export interface ProductSummary {
+  brand: string
+  brandId: string
+  categories: string[]
+  items: ItemSummary[]
+  linkText: string
+  productId: string
+  productName: string
+  productReference: string
+  sku: ItemSummary
 }
 
-interface CommertialOffer {
-  Price: number;
-  [key: string]: any;
+interface ItemSummary {
+  itemId: string
+  ean: string
+  name: string
+  referenceId: { Key: string; Value: string }
+  seller: Seller
+  sellers: Seller[]
 }
 
-interface AddToCartProduct {
-  brand: string;
-  name: string;
-  price: number;
-  quantity: number;
-  skuId: string;
-  variant: string;
+export interface Seller {
+  commertialOffer: CommertialOffer
+  sellerId: string
+  sellerName: string
+}
+
+export interface CommertialOffer {
+  Price: number
+  ListPrice: number
+  AvailableQuantity: number
 }

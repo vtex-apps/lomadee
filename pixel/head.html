@@ -1,14 +1,12 @@
 <script type="text/javascript">
   (function(window) {
-    var lomadeeEventId = "{{settings.lomadeeEventId}}";
     var lomadeeAdvertiserId = "{{settings.lomadeeAdvertiserId}}";
-    if (lomadeeEventId && lomadeeAdvertiserId) {
+    if (lomadeeAdvertiserId) {
       var lomadeeTag = document.createElement("script");
       lomadeeTag.type = "text/javascript";
       lomadeeTag.src = "//secure.lomadee.com/a/{{settings.lomadeeAdvertiserId}}.js";
       document.getElementsByTagName("head")[0].appendChild(lomadeeTag);
     }
-    window.lomadeeEventId = lomadeeEventId;
     window.lomadeeAdvertiserId = lomadeeAdvertiserId;
   })(window);
 </script>
